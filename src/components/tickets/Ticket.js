@@ -1,10 +1,13 @@
+import { useNavigate } from "react-router-dom"
 import { getAllEmployees } from "../../services/employeeService"
-import { assignTicket, updateTicket } from "../../services/ticketService"
+import { assignTicket, deleteTicket, updateTicket } from "../../services/ticketService"
 import { useEffect, useState } from "react"
 
 export const Ticket = ({ ticket, currentUser, getAndSetTickets }) => { // could use "prop" w/out curly braces, and then change all to prop.ticket.id, for example
     const [employees, setEmployees] = useState([])
     const [assignedEmployee, setAssignedEmployee] = useState({})
+
+    const navigate = useNavigate()
 
     useEffect(() => {
         getAllEmployees().then((employeesArray) => {
@@ -23,7 +26,7 @@ export const Ticket = ({ ticket, currentUser, getAndSetTickets }) => { // could 
         const currentEmployee = employees.find(
             (employee) => employee.userId === currentUser.id
         )
-        
+
         const newEmployeeTicket = {
             employeeId: currentEmployee.id,
             serviceTicketId: ticket.id
@@ -47,6 +50,15 @@ export const Ticket = ({ ticket, currentUser, getAndSetTickets }) => { // could 
         updateTicket(closedTicket).then(() => {
             getAndSetTickets()
         })
+    }
+
+    const handleDelete = () => {
+        deleteTicket(ticket.id).then(() =>
+            getAndSetTickets())
+    }
+
+    const handleEdit = () => {
+        navigate(`/tickets/edit/${ticket.id}`)
     }
 
     return (
@@ -76,10 +88,15 @@ export const Ticket = ({ ticket, currentUser, getAndSetTickets }) => { // could 
                     then a button to close the ticket should display */}
                     {assignedEmployee?.userId === currentUser.id && !ticket.dateCompleted ? (
                         <button className="btn btn-warning" onClick={handleClose}>Close</button>
-                        ) : ( 
-                            "" 
-                        )
-                    }
+                    ) : (
+                        ""
+                    )}
+                    {!(currentUser.isStaff) && (
+                        <div className="buttons">
+                            <button className="btn btn-info" onClick={handleEdit}>Edit</button>
+                            <button className="btn btn-warning" onClick={handleDelete}>Delete</button>
+                        </div>
+                    )}
                 </div>
             </footer>
         </section>
